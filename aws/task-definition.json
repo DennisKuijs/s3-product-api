@@ -9,7 +9,7 @@
       "entryPoint": [],
       "portMappings": [
         {
-          "hostPort": 8080,
+          "hostPort": 8888,
           "protocol": "tcp",
           "containerPort": 5000
         }
@@ -50,13 +50,13 @@
     }
   ],
   "placementConstraints": [],
-  "memory": "1024",
+  "memory": "512",
   "taskRoleArn": null,
   "compatibilities": [
     "EXTERNAL",
     "EC2"
   ],
-  "taskDefinitionArn": "arn:aws:ecs:eu-central-1:915262704362:task-definition/s3-individueel-task:10",
+  "taskDefinitionArn": "arn:aws:ecs:eu-central-1:915262704362:task-definition/s3-individueel-task:8",
   "family": "s3-individueel-task",
   "requiresAttributes": [
     {
@@ -73,7 +73,7 @@
   "networkMode": null,
   "runtimePlatform": null,
   "cpu": "1024",
-  "revision": 10,
+  "revision": 8,
   "status": "ACTIVE",
   "inferenceAccelerators": null,
   "proxyConfiguration": null,
