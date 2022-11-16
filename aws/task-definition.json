@@ -1,0 +1,81 @@
+{
+    "ipcMode": null,
+    "executionRoleArn": null,
+    "containerDefinitions": [
+      {
+        "dnsSearchDomains": null,
+        "environmentFiles": null,
+        "logConfiguration": null,
+        "entryPoint": [],
+        "portMappings": [
+          {
+            "hostPort": 8080,
+            "protocol": "tcp",
+            "containerPort": 5000
+          }
+        ],
+        "command": [],
+        "linuxParameters": null,
+        "cpu": 0,
+        "environment": [],
+        "resourceRequirements": null,
+        "ulimits": null,
+        "dnsServers": null,
+        "mountPoints": [],
+        "workingDirectory": null,
+        "secrets": null,
+        "dockerSecurityOptions": null,
+        "memory": null,
+        "memoryReservation": null,
+        "volumesFrom": [],
+        "stopTimeout": null,
+        "image": "915262704362.dkr.ecr.eu-central-1.amazonaws.com/s3-individueel:b409085c1105b9e8f7a538d4a33f3409545f8760",
+        "startTimeout": null,
+        "firelensConfiguration": null,
+        "dependsOn": null,
+        "disableNetworking": null,
+        "interactive": null,
+        "healthCheck": null,
+        "essential": true,
+        "links": null,
+        "hostname": null,
+        "extraHosts": null,
+        "pseudoTerminal": null,
+        "user": null,
+        "readonlyRootFilesystem": null,
+        "dockerLabels": null,
+        "systemControls": null,
+        "privileged": null,
+        "name": "product-api"
+      }
+    ],
+    "placementConstraints": [],
+    "memory": "1024",
+    "taskRoleArn": null,
+    "compatibilities": [
+      "EXTERNAL",
+      "EC2"
+    ],
+    "taskDefinitionArn": "arn:aws:ecs:eu-central-1:915262704362:task-definition/s3-individueel-task:1",
+    "family": "s3-individueel-task",
+    "requiresAttributes": [
+      {
+        "targetId": null,
+        "targetType": null,
+        "value": null,
+        "name": "com.amazonaws.ecs.capability.ecr-auth"
+      }
+    ],
+    "pidMode": null,
+    "requiresCompatibilities": [
+      "EC2"
+    ],
+    "networkMode": null,
+    "runtimePlatform": null,
+    "cpu": "1024",
+    "revision": 1,
+    "status": "ACTIVE",
+    "inferenceAccelerators": null,
+    "proxyConfiguration": null,
+    "volumes": []
+  }
