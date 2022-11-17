@@ -29,7 +29,7 @@ export default interface Product extends Document {
         salesPrice: number,
         vatPercentage: number,
     },
-    productStatus: Boolean,
+    productStatus: boolean,
     createdAt: Date,
     updatedAt: Date
 }
