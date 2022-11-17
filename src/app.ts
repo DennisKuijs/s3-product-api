@@ -20,7 +20,9 @@ class App {
 
     private enableExpressMiddlewares() : void {
         this.express.use(express.json({ limit: '50mb' }));
-        this.express.use(cors())
+        this.express.use(cors({
+            origin: '145.93.44.72'
+        }))
         this.express.use(bodyParser.json({ limit: '50mb' }))
         this.express.use(bodyParser.urlencoded({ limit: '50mb', extended: true }))
     }
