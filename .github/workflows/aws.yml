@@ -68,10 +68,10 @@ jobs:
         
       - name: ☁ Push Docker Image to AWS ECR
         env: 
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REGISTRY: ${{ secrets.AWS_REGISTRY_URL }}
           IMAGE_TAG: ${{ needs.Build.outputs.tag }}
         run: |
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:1
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
     
   Deploy:
