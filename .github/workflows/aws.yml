@@ -22,6 +22,8 @@ jobs:
     # The type of runner that the job will run on
     name: 🔧 Build Image
     runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.build-img.outputs.image }}
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
