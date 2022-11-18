@@ -5,7 +5,7 @@ name: Deploy to AWS
 env: 
   AWS_REGION: eu-central-1
   ECR_REPOSITORY: s3-individueel
-  ECS_TASK_DEFINITION: s3-individueel-task
+  ECS_TASK_DEFINITION: ./aws/task-definition.json
   ECS_CLUSTER_NAME: s3-individueel
   ECS_SERVICE_NAME: s3-individueel-service
   IMAGE_TAG: product-api
@@ -66,8 +66,10 @@ jobs:
     
     steps:
       - name: ☁ Deploy AWS ECS Service
-        uses: icalia-actions/deploy-aws-ecs-service@v0.0.7
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with: 
-          name: ${ECS_SERVICE_NAME}
+          task-definition: ${ECS_TASK_DEFINITION}
+          service: ${ECS_SERVICE_NAME}
           cluster: ${ECS_CLUSTER_NAME}
+          wait-for-service-stability: true
       
