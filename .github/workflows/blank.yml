@@ -64,10 +64,9 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: ☁ Deploy AWS ECS Task Definition
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+      - name: ☁ Deploy AWS ECS Service
+        uses: icalia-actions/deploy-aws-ecs-service@v0.0.7
         with: 
-          task-definition: ${ECS_TASK_DEFINITION}
-          service: ${ECS_SERVICE_NAME}
+          name: ${ECS_SERVICE_NAME}
           cluster: ${ECS_CLUSTER_NAME}
       
