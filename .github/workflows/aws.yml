@@ -18,6 +18,22 @@ permissions:
   contents: read
 
 jobs:
+  Login:
+    name: ☁ Login to AWS
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: ☁ Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+          
+      - name: ☁ Login to AWS ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
   Build:
     # The type of runner that the job will run on
     name: 🔧 Build Image
