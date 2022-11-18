@@ -8,7 +8,7 @@ env:
   ECS_TASK_DEFINITION: ./aws/task-definition.json
   ECS_CLUSTER_NAME: s3-individueel
   ECS_SERVICE_NAME: s3-individueel-service
-  IMAGE_TAG: product-api
+  CONTAINER_NAME: product-api
 
 # Controls when the workflow will run
 on:
@@ -29,6 +29,9 @@ jobs:
     # The type of runner that the job will run on
     name: 🔧 Build Image
     runs-on: ubuntu-latest
+    outputs: 
+      tag: ${{ steps.build-img.outputs.tag }}
+      image: ${{ steps.build-img.outputs.image }}
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -36,6 +39,22 @@ jobs:
       - name: 🔧 Checkout repository
         uses: actions/checkout@v3
         
+      - name: 🔧 Build Docker Image
+        id: build-img
+        env: 
+          ECR_REGISTRY: ${{ secrets.AWS_REGISTRY_URL }}
+          IMAGE_TAG:  ${{ github.sha }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          echo "::set-output name=tag::$IMAGE_TAG"
+          echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+  
+  Push:
+    name: ☁ Push Image to AWS ECR
+    runs-on: ubuntu-latest
+    needs: "Build"
+    
+    steps:
       - name: ☁ Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -47,24 +66,28 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
         
-      - name: 🔧 Build Docker Image
-        env: 
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          
       - name: ☁ Push Docker Image to AWS ECR
         env: 
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REGISTRY: ${{ secrets.AWS_REGISTRY_URL }}
+          IMAGE_TAG: ${{ needs.Build.outputs.tag }}
         run: |
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          
+
+    
   Deploy:
-    name: ☁ Deploy Image
+    name: ☁ Deploy Image to Production
     runs-on: ubuntu-latest
-    needs: 'Build'
+    needs: ['Build', 'Push']
     
     steps:
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ env.ECS_TASK_DEFINITION }}
+          container-name: ${{ env.CONTAINER_NAME }}
+          image: ${{ needs.Build.outputs.image }}
+    
       - name: ☁ Deploy AWS ECS Service
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with: 
