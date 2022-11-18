@@ -22,7 +22,8 @@ jobs:
     # The type of runner that the job will run on
     name: 🔧 Build Image
     runs-on: ubuntu-latest
-
+    outputs:
+      image: ${{ steps.build-img.outputs.image }}
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -64,7 +65,7 @@ jobs:
         with:
           task-definition: ${{ env.ECS_TASK_DEFINITION }}
           container-name: ${{ env.CONTAINER_NAME }}
-          image: ${{ jobs.build.outputs.image }}
+          image: ${{ env.image }}
     
       - name: ☁ Deploy AWS ECS Service
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
