@@ -1,0 +1,56 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Deploy to AWS
+
+env: 
+  AWS_REPOSITORY: s3-individueel
+  IMAGE_TAG: latest
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "production" branch
+  push:
+    branches: [ "production" ]
+    
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+  
+permissions:
+  contents: read
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  Docker:
+    # The type of runner that the job will run on
+    name: Build Image
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: 🔧 Checkout repository
+        uses: actions/checkout@v3
+        
+      - name: 🔧 Build Docker Image
+        run: |
+          docker build -t $ECR_REPOSITORY:$IMAGE_TAG .
+          
+  ECRConnection:
+    name: Connect to AWS ECR Repository
+    runs-on: ubuntu-latest
+    needs: ['Docker']
+    
+    steps: 
+    - name: ☁ Connect to AWS ECR Repository
+      uses: aws-actions/amazon-ecr-login@v1
+  
+  ECRPush:
+    name: Push Docker Image to AWS ECR Repository
+    runs-on: ubuntu-latest
+    needs: ['ECRConnection']
+    
+    steps:
+    - name: ☁ Push Docker Image to AWS ECR Repository
+      run: |
+        docker push $ECR_REPOSITORY:$IMAGE_TAG
