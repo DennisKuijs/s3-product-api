@@ -23,7 +23,7 @@ jobs:
     name: 🔧 Build Image
     runs-on: ubuntu-latest
     outputs:
-      imageUrl: ${{ steps.build-img.outputs.image }}
+      imageUrl: 1
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
