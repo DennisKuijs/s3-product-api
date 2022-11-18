@@ -43,7 +43,14 @@ jobs:
     needs: ['Docker']
     
     steps: 
-    - name: ☁ Connect to AWS ECR Repository
+    - name: ☁ Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+    
+    - name: ☁ Connecto to AWS ECR Repository
       uses: aws-actions/amazon-ecr-login@v1
   
   ECRPush:
