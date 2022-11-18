@@ -57,7 +57,7 @@ jobs:
   ECRPush:
     name: Push Docker Image to AWS ECR Repository
     env: 
-      ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+      ECR_REGISTRY: ${{ needs.ECRConnection.steps.login-ecr.outputs.registry }}
     runs-on: ubuntu-latest
     needs: ['ECRConnection']
     
