@@ -35,7 +35,7 @@ jobs:
         
       - name: 🔧 Build Docker Image
         run: |
-          docker build -t $AWS_REPOSITORY:$IMAGE_TAG .
+          docker build -t $ECR_REPOSITORY:$IMAGE_TAG .
           
   Connect:
     name: ☁ Connect to AWS
