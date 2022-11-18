@@ -23,7 +23,7 @@ jobs:
     name: 🔧 Build Image
     runs-on: ubuntu-latest
     outputs:
-      image: ${{ steps.build-img.outputs.image }}
+      image: 1
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
