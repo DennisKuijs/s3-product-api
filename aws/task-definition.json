@@ -26,10 +26,10 @@
       "secrets": null,
       "dockerSecurityOptions": null,
       "memory": null,
-      "memoryReservation": null,
+      "memoryReservation": 500,
       "volumesFrom": [],
       "stopTimeout": null,
-      "image": "915262704362.dkr.ecr.eu-central-1.amazonaws.com/s3-individueel:b8e745895e25d4cfe20b840813e88659fb7c337f",
+      "image": "915262704362.dkr.ecr.eu-central-1.amazonaws.com/s3-individueel:545da16f3584cf1cb11343c0b279e547e1a29c25",
       "startTimeout": null,
       "firelensConfiguration": null,
       "dependsOn": null,
@@ -56,7 +56,7 @@
     "EXTERNAL",
     "EC2"
   ],
-  "taskDefinitionArn": "arn:aws:ecs:eu-central-1:915262704362:task-definition/s3-individueel-task:20",
+  "taskDefinitionArn": "arn:aws:ecs:eu-central-1:915262704362:task-definition/s3-individueel-task:32",
   "family": "s3-individueel-task",
   "requiresAttributes": [
     {
@@ -64,6 +64,12 @@
       "targetType": null,
       "value": null,
       "name": "com.amazonaws.ecs.capability.ecr-auth"
+    },
+    {
+      "targetId": null,
+      "targetType": null,
+      "value": null,
+      "name": "com.amazonaws.ecs.capability.docker-remote-api.1.21"
     }
   ],
   "pidMode": null,
@@ -73,7 +79,7 @@
   "networkMode": null,
   "runtimePlatform": null,
   "cpu": "1024",
-  "revision": 20,
+  "revision": 32,
   "status": "ACTIVE",
   "inferenceAccelerators": null,
   "proxyConfiguration": null,
