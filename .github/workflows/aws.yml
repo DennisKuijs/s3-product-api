@@ -43,7 +43,7 @@ jobs:
         id: build-img
         env: 
           ECR_REGISTRY: ${{ secrets.AWS_REGISTRY_URL }}
-          IMAGE_TAG:  ${{ github.sha }}
+          IMAGE_TAG: ${{ github.sha }}
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           echo "::set-output name=tag::$IMAGE_TAG"
