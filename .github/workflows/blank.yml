@@ -5,6 +5,9 @@ name: Deploy to AWS
 env: 
   AWS_REGION: eu-central-1
   ECR_REPOSITORY: s3-individueel
+  ECS_TASK_DEFINITION: s3-individueel-task
+  ECS_CLUSTER_NAME: s3-individueel
+  ECS_SERVICE_NAME: s3-individueel-service
   IMAGE_TAG: product-api
 
 # Controls when the workflow will run
@@ -24,7 +27,7 @@ jobs:
   # This workflow contains a single job called "build"
   Build:
     # The type of runner that the job will run on
-    name: 🔧 Build Docker Image
+    name: 🔧 Build Image
     runs-on: ubuntu-latest
 
     # Steps represent a sequence of tasks that will be executed as part of the job
@@ -55,3 +58,16 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          
+  Deploy:
+    name: ☁ Deploy Image
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: ☁ Deploy AWS ECS Task Definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with: 
+          task-definition: ${ECS_TASK_DEFINITION}
+          service: ${ECS_SERVICE_NAME}
+          cluster: ${ECS_CLUSTER_NAME}
+      
