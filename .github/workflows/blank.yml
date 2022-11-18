@@ -40,11 +40,12 @@ jobs:
   ECRConnection:
     name: Connect to AWS ECR Repository
     runs-on: ubuntu-latest
+    outputs: 
+      ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
     needs: ['Docker']
     
     steps: 
     - name: ☁ Configure AWS Credentials
-      id: login-ecr
       uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -52,12 +53,13 @@ jobs:
         aws-region: ${{ env.AWS_REGION }}
     
     - name: ☁ Connecto to AWS ECR Repository
+      id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
   
   ECRPush:
     name: Push Docker Image to AWS ECR Repository
     env: 
-      ECR_REGISTRY: ${{ needs.ECRConnection.steps.login-ecr.outputs.registry }}
+      ECR_REGISTRY: ${{ needs.ECRConnection.outputs.ECR_REGISTRY }}
     runs-on: ubuntu-latest
     needs: ['ECRConnection']
     
