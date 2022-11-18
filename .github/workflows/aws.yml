@@ -18,11 +18,17 @@ permissions:
   contents: read
 
 jobs:
-  Login:
-    name: ☁ Login to AWS
+  Build:
+    # The type of runner that the job will run on
+    name: 🔧 Build Image
     runs-on: ubuntu-latest
-    
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: 🔧 Checkout repository
+        uses: actions/checkout@v3
+        
       - name: ☁ Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -33,28 +39,35 @@ jobs:
       - name: ☁ Login to AWS ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
-
-  Build:
-    # The type of runner that the job will run on
-    name: 🔧 Build Image
-    runs-on: ubuntu-latest
-    outputs: 
-      tag: ${{ steps.build-img.outputs.tag }}
-      image: ${{ steps.build-img.outputs.image }}
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - name: 🔧 Checkout repository
-        uses: actions/checkout@v3
         
-      - name: 🔧 Build Docker Image
+      - name: 🔧 ☁ Build & Push Docker Image to AWS ECR
         id: build-img
         env: 
-          ECR_REGISTRY: ${{ secrets.AWS_REGISTRY_URL }}
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          echo "::set-output name=tag::$IMAGE_TAG"
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+          
+  Deploy:
+    name: ☁ Deploy Image to Production
+    runs-on: ubuntu-latest
+    needs: 'Build'
+    
+    steps:
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ env.ECS_TASK_DEFINITION }}
+          container-name: ${{ env.CONTAINER_NAME }}
+          image: ${{ needs.Build.outputs.image }}
+    
+      - name: ☁ Deploy AWS ECS Service
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with: 
+          task-definition: ${{ env.ECS_TASK_DEFINITION }}
+          service: ${{ env.ECS_SERVICE_NAME }}
+          cluster: ${{ env.ECS_CLUSTER_NAME }}
+          wait-for-service-stability: true
