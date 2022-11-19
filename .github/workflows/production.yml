@@ -60,6 +60,6 @@ jobs:
         env:
           IMAGE: ${{ needs.build.outputs.image }}
         run: |
-          docker push $IMAGE:$IMAGE_TAG
+          docker push $IMAGE_TAG
     
       
