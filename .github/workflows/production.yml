@@ -10,7 +10,8 @@ env:
   ECS_SERVICE: s3-individueel-service                
   ECS_CLUSTER: s3-individueel                 
   ECS_TASK_DEFINITION: ./aws/task-definition.json 
-  CONTAINER_NAME: product-api-container          
+  CONTAINER_NAME: product-api-container
+  IMAGE_TAG: ${{ github.sha }}
 
 permissions:
   contents: read
@@ -47,10 +48,9 @@ jobs:
         id: build-img
         env:
           ECR_REGISTRY: ${{ needs.login.outputs.ecr_registry }}
-          IMAGE_TAG: ${{ github.sha }}
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY" >> $GITHUB_OUTPUT
   push:
     name: ☁ Push Image to ECR
     runs-on: ubuntu-latest
@@ -60,6 +60,6 @@ jobs:
         env:
           IMAGE: ${{ needs.build.outputs.image }}
         run: |
-          docker push $IMAGE
+          docker push $IMAGE:$IMAGE_TAG
     
       
