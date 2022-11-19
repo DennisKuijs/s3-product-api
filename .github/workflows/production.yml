@@ -10,19 +10,24 @@ env:
   ECS_SERVICE: s3-individueel-service                
   ECS_CLUSTER: s3-individueel                 
   ECS_TASK_DEFINITION: ./aws/task-definition.json 
-  CONTAINER_NAME: product-api-container
-  IMAGE_TAG: ${{ github.sha }}
+  CONTAINER_NAME: product-api-container          
 
 permissions:
   contents: read
 
 jobs:
-  login:
-    name: 🔒 Connect to AWS
+  build:
+    # The type of runner that the job will run on
+    name: 🔧 Build Image
     runs-on: ubuntu-latest
     outputs:
-      ecr_registry: ${{ steps.login-ecr.outputs.registry }}
+      imageUrl: ${{ steps.build-img.outputs.image }}
+    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: 🔧 Checkout repository
+        uses: actions/checkout@v3
+        
       - name: ☁ Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -34,32 +39,46 @@ jobs:
       - name: ☁ Login to AWS ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
-  build:
-    name: 🔧 Build Docker Image
-    runs-on: ubuntu-latest
-    needs: login
-    outputs:
-      image: ${{ steps.build-img.outputs.image }}
-    steps:
-      - name: 🔧 Checkout repository
-        uses: actions/checkout@v3
         
-      - name: 🔧 Build Image
+      - name: 🔧 ☁ Build & Push Docker Image to AWS ECR
         id: build-img
-        env:
-          ECR_REGISTRY: ${{ needs.login.outputs.ecr_registry }}
+        env: 
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          echo "image=$ECR_REGISTRY" >> $GITHUB_OUTPUT
-  push:
-    name: ☁ Push Image to ECR
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+  deploy:
+    name: ☁ Deploy Image to Production
     runs-on: ubuntu-latest
     needs: build
-    steps:
-      - name: ☁ Push Docker Image to ECR
-        env:
-          REGISTRY: ${{ needs.build.outputs.image }}
-        run: |
-          docker push $REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
     
-      
+    steps:
+      - name: 🔧 Checkout repository
+        uses: actions/checkout@v3   
+        
+      - name: ☁ Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+         
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        env:
+          imageData: ${{ needs.build.outputs.imageUrl }}
+        with:
+          task-definition: ${{ env.ECS_TASK_DEFINITION }}
+          container-name: ${{ env.CONTAINER_NAME }}
+          image: ${{ needs.build.outputs.imageUrl }}
+    
+      - name: ☁ Deploy AWS ECS Service
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with: 
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
