@@ -15,35 +15,50 @@ class ImageService {
     }
 
     public async uploadImage(image : string) {
-        const base64Image = Uint8Array.from(Buffer.from(image.replace(/^data:image\/\w+;base64,/, ""), 'base64'))
+        try {
+            const base64Image = Uint8Array.from(Buffer.from(image.replace(/^data:image\/\w+;base64,/, ""), 'base64'))
 
-        const uploadParams : any = {
-            Bucket: process.env.AWS_BUCKET_NAME,
-            Body: base64Image,
-            Key: uuid()
+            const uploadParams : any = {
+                Bucket: process.env.AWS_BUCKET_NAME,
+                Body: base64Image,
+                Key: uuid()
+            }
+    
+            return this.s3Instance.upload(uploadParams).promise()
         }
-
-        return this.s3Instance.upload(uploadParams).promise()
+        catch (error) {
+            throw new Error('Er is een probleem opgetreden met het uploaden van de afbeelding')
+        }
     }
     
     public async deleteImage(image: string) {
-        const downloadParams : any = {
-            Bucket: process.env.AWS_BUCKET_NAME,
-            Key: image
+        try {
+            const downloadParams : any = {
+                Bucket: process.env.AWS_BUCKET_NAME,
+                Key: image
+            }
+    
+            return this.s3Instance.deleteObject(downloadParams).promise();
         }
-
-        return this.s3Instance.deleteObject(downloadParams).promise();
+        catch (error) {
+            throw new Error('Er is een probleem opgetreden met het verwijderen van de afbeelding')
+        }
     }
 
     public async getImage(image: string) {
-        const signedImageUrl : any = await getSignedUrl({
-            url: `${process.env.AWS_CLOUDFRONT_CDN}/${image}`,
-            dateLessThan: new Date(Date.now() + 1000 * 60 * 60 * 24) as any,
-            privateKey: process.env.AWS_CLOUDFRONT_PRIVATE_KEY as any,
-            keyPairId: process.env.AWS_CLOUDFRONT_KEYPAIR_ID as any,
-        }) 
-
-        return signedImageUrl;
+        try {
+            const signedImageUrl : any = await getSignedUrl({
+                url: `${process.env.AWS_CLOUDFRONT_CDN}/${image}`,
+                dateLessThan: new Date(Date.now() + 1000 * 60 * 60 * 24) as any,
+                privateKey: process.env.AWS_CLOUDFRONT_PRIVATE_KEY as any,
+                keyPairId: process.env.AWS_CLOUDFRONT_KEYPAIR_ID as any,
+            }) 
+    
+            return signedImageUrl;
+        }
+        catch (error) {
+            throw new Error('Er is een probleem opgetreden met het ophalen van de afbeelding')
+        }
     }
 }
 

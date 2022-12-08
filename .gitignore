@@ -6,3 +6,4 @@ settings.json
 uploads
 private_key.pem
 public_key.pem
+.localstack

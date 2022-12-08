@@ -11,7 +11,7 @@ class ProductService {
             const productExists = await this.product.exists({productCode: productdto.productCode})
             
             if (productExists) {
-                throw new Error('Product already exists in the system!');
+                throw new Error('Product bestaat al in het systeem!');
             }
 
             if(productdto.image != null) {
@@ -19,8 +19,8 @@ class ProductService {
                     const image = await this.ImageService.uploadImage(productdto.image)
                     productdto.image = image.Key;
                 }
-                catch (error) {
-                    throw new Error('Something went wrong with uploading the image')
+                catch (error : any) {
+                    throw new Error(error.message)
                 }
             }
 
@@ -37,7 +37,7 @@ class ProductService {
             const productExists = await this.product.exists({productId: productId})
             
             if (!productExists) {
-                throw new Error('Product is not available in the system!')
+                throw new Error('Product is niet beschikbaar in het systeem')
             }
 
             const product = await this.product.findOne({productId: productId})
@@ -50,15 +50,39 @@ class ProductService {
 
     public async getAllProducts(limit: number, page: number) : Promise<Product[]> {
         try {
-            const products = await this.product.find({}).limit(limit).skip((page - 1) * limit)
+
+            const newLimit = limit || 0
+            const newPage = page || 1
+            const startIndex = (page - 1) * limit
+            let maxPage = 1;
+            
+            if (newLimit > 0) {
+                maxPage = Math.ceil(await ProductModel.countDocuments() / newLimit) 
+            }
+
+            const results : any = {
+                filters: {}
+            }
+
+            const products = await this.product.find({}).limit(newLimit).skip(startIndex)
 
             for (const product of products) {
                 if(product.image != null) {
-                    product.imageUrl = await this.ImageService.getImage(product.image)
+                    try {
+                        product.imageUrl = await this.ImageService.getImage(product.image)
+                    }
+                    catch (error : any) {
+                        throw new Error(error.message)
+                    }
                 }
             }
 
-            return products;
+            results.filters.maxPage = maxPage;
+            results.filters.currentPage = newPage;
+            results.filters.limit = newLimit;
+            results.products = products
+
+            return results;
         }
         catch (error : any) {
             throw new Error(error.message)
@@ -70,11 +94,38 @@ class ProductService {
             const productExists = await this.product.exists({productId: productId})
             
             if (!productExists) {
-                throw new Error('Product is not available in the system!')
+                throw new Error('Product is niet beschikbaar in het systeem!')
             }
 
-            const product = await this.product.findOneAndUpdate({productId: productId}, productdto)
+            const product = await this.product.findOneAndUpdate({productId: productId}, productdto, {
+                new: true
+            })
             return product;
+        }
+        catch (error : any) {
+            throw new Error(error.message)
+        }
+    }
+
+    public async disableProduct(productId: string) : Promise<Product | null> {
+        try {
+            const productExists = await this.product.exists({productId: productId})
+
+            if (!productExists) {
+                throw new Error('Product is niet beschikbaar in het systeem')
+            }
+
+            const product = await this.product.findOne({productId: productId})
+
+            if(!product) {
+                throw new Error('Product heeft geen gegevens!')
+            }
+
+            const disableProduct = await this.product.findOneAndUpdate({productId: productId}, {productStatus: !product.productStatus}, {
+                new: true
+            })
+
+            return disableProduct
         }
         catch (error : any) {
             throw new Error(error.message)
@@ -86,13 +137,18 @@ class ProductService {
             const productExists = await this.product.exists({productId: productId})
 
             if (!productExists) {
-                throw new Error('Product is not available in the system!')
+                throw new Error('Product is niet beschikbaar in het systeem')
             }
 
             const product = await this.product.findOneAndDelete({productId: productId})
 
             if(product && product.image != null) {
-                await this.ImageService.deleteImage(product.image);
+                try {
+                    await this.ImageService.deleteImage(product.image);
+                }
+                catch (error : any) {
+                    throw new Error(error.message)
+                }
             }
 
             return product;

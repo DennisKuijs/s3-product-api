@@ -6,7 +6,7 @@ const ProductSchema = new Schema({
     productId: {
         type: String,
         required: true,
-        default: uuid(),
+        default: () => uuid(),
         immutable: true,
     },
     productCode: {

@@ -10,6 +10,9 @@ function validateEnv() : void {
         AWS_CLOUDFRONT_PRIVATE_KEY: str(),
         MONGOOSE_CONNECTIONSTRING: str(),
         AWS_CLOUDFRONT_KEYPAIR_ID: str(),
+        COUNTRY_FILE_NAME: str(),
+        AWS_BUCKET_NAME_APP: str(),
+        NODE_ENV: str(),
         SERVER_PORT: port( {default: 5000} )
     })
 }

@@ -1,9 +1,9 @@
 import express, { Application } from 'express';
-import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import logger from './api/utils/logger';
 import Controller from './api/interfaces/controller.interface';
+import DBConnection from './api/utils/DBConnection';
 
 class App {
     public express: Application
@@ -14,22 +14,17 @@ class App {
         this.port = port;
 
         this.enableExpressMiddlewares();
-        this.mongodbConnection();
         this.enableExpressControllers(controllers);
+        DBConnection.connectDB();
     }
 
     private enableExpressMiddlewares() : void {
-        this.express.use(express.json({ limit: '50mb' }));
         this.express.use(cors({
             origin: process.env.SERVER_IP
         }))
+        this.express.use(express.json({ limit: '50mb' }));
         this.express.use(bodyParser.json({ limit: '50mb' }))
         this.express.use(bodyParser.urlencoded({ limit: '50mb', extended: true }))
-    }
-
-    private mongodbConnection() : void {
-        const connectionString : string = process.env.MONGOOSE_CONNECTIONSTRING ?? '';
-        mongoose.connect(connectionString)
     }
 
     private enableExpressControllers(controllers: Controller[]) : void {
@@ -38,9 +33,8 @@ class App {
         });
     }
     
-
-    public listen() : void {
-        this.express.listen(this.port, () => {
+    public listen() : any {
+        return this.express.listen(this.port, () => {
             logger.info(`Product API is running on http://localhost:${this.port}`)
         })
     }
