@@ -56,8 +56,8 @@ class ImageService {
     
             return signedImageUrl;
         }
-        catch (error) {
-            throw new Error('Er is een probleem opgetreden met het ophalen van de afbeelding')
+        catch (error : any) {
+            throw new Error(error.message)
         }
     }
 }
